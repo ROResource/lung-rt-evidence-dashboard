@@ -17,7 +17,7 @@ main{max-width:1150px;margin:auto;padding:16px 24px 60px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
 .card h3{margin:0 0 4px;font-size:15px}.sub{color:var(--mute);font-size:12.5px}
 .kpi{font-size:26px;font-weight:650;font-variant-numeric:tabular-nums}.kpi small{font-size:13px;color:var(--mute);font-weight:400}
-.row{display:grid;grid-template-columns:minmax(110px,40%) 1fr 56px;gap:8px;align-items:center;margin:5px 0;font-size:13px}
+.row{display:grid;grid-template-columns:minmax(110px,40%) 1fr 70px;gap:8px;align-items:center;margin:5px 0;font-size:13px}
 .track{background:var(--line);border-radius:4px;height:16px;position:relative}.fill{height:100%;border-radius:4px}
 .rng{position:absolute;top:0;height:100%;border-radius:4px;opacity:.85}
 .val{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
@@ -32,7 +32,7 @@ h2{font-size:17px;margin:22px 0 10px}
 details summary{cursor:pointer;color:var(--acc);font-size:12.5px;margin-top:8px}
 .ovt{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:13px;margin-top:8px}.ovt b{font-variant-numeric:tabular-nums}
 footer{color:var(--mute);font-size:12px;max-width:1150px;margin:auto;padding:0 24px 40px}
-@media(max-width:600px){.row{grid-template-columns:110px 1fr 50px}header,.ctrl,main{padding-left:14px;padding-right:14px}.seg button{padding:7px 9px;font-size:12.5px}}
+@media(max-width:600px){.row{grid-template-columns:100px 1fr 66px;font-size:12.5px}.val{font-size:12.5px}header,.ctrl,main{padding-left:14px;padding-right:14px}.seg button{padding:7px 9px;font-size:12.5px}}
 </style></head><body>
 <header><h1>Lung cancer · radiotherapy evidence</h1>
 <p>Survival, local control, toxicity and dose constraints from landmark trials – NSCLC and SCLC, RT alone, SABR, chemo-RT, RT + immunotherapy. Personal reference, not a clinical decision tool.</p></header>
@@ -61,7 +61,7 @@ function byTrial(e){const rs=OUT.filter(r=>inG(r)&&r.e===e);const ts=[...new Set
  return `<div class="card"><h3>${tl(t)} ${!med&&+y>0?`<span class="tag">${y<1?Math.round(y*12)+"-mo":y+"-yr"}</span>`:(!med?'<span class="tag">crude / actuarial</span>':"")}</h3><div class="sub">${TRIALS[t].pop}</div>${bars(rr,mx,med?" mo":"%")}</div>`}).join("")}
 function rng(vals){if(!vals.length)return null;const a=Math.min(...vals),b=Math.max(...vals);return {a,b,txt:a===b?`${fmt(a)}`:`${fmt(a)}–${fmt(b)}`}}
 function toxComposite(tx,kind){const re=kind==="pneu"?/neumonitis/i:/esophagitis|dysphagia/i;const other=kind==="pneu"?/esophagitis|dysphagia/i:/neumonitis/i;
- const out=[];TOX.filter(r=>inG(r)&&re.test(r.cat)&&/G3|≥G3/.test(r.gr)&&!/≥G2 \/|^≥G2$/.test(r.gr)).forEach(r=>{r.a.forEach(([arm,v,k])=>{if(k!==tx)return;if(/any grade|symptomatic|fatal|death|grade 4|G4|G5|≥G2|RPA|age >65|Any grade/i.test(arm))return;if(other.test(r.cat)&&!re.test(arm))return;out.push({t:r.t,arm,v})})});return out}
+ const out=[];TOX.filter(r=>inG(r)&&re.test(r.cat)&&/G3|≥G3/.test(r.gr)&&!/≥G2 \/|^≥G2$/.test(r.gr)).forEach(r=>{r.a.forEach(([arm,v,k])=>{if(k!==tx)return;if(/any grade|symptomatic|fatal|death|grade 4|G4|G5|≥G2|RPA|age >65|Any grade/i.test(arm))return;if(/ \/ /.test(r.cat)&&!re.test(arm))return;out.push({t:r.t,arm,v})})});return out}
 function overview(){
  const txs=usedTx().filter(k=>!["surg","sys","none"].includes(k));
  const metric=(tx,e,y)=>{const rs=OUT.filter(r=>inG(r)&&r.tx===tx&&r.e===e&&(y===undefined||r.y===y));return {r:rng(rs.map(r=>r.v)),rs}};
@@ -72,9 +72,9 @@ function overview(){
   if(!trials.length)return "";
   const line=(lab,r,unit,extra)=>r?`<div>${lab}${extra?` <span class="sub">${extra}</span>`:""}</div><b>${r.txt}${unit}</b>`:"";
   const rb=(lab,r,col)=>r?`<div class="row"><div>${lab}</div><div class="track"><div class="rng" style="left:${Math.max(0,r.a)}%;width:${Math.max(r.b-r.a,1.2)}%;background:${col}"></div></div><div class="val">${r.txt}%</div></div>`:"";
-  return `<div class="card" style="border-top:4px solid ${TXC[tx]}"><h3>${TXL[tx]}</h3><div class="sub">${trials.length} source${trials.length>1?"s":""} · range of arm-level estimates</div>
+  return `<div class="card" style="border-top:4px solid ${TXC[tx]}"><h3>${TXL[tx]}</h3><div class="sub">${trials.length} source${trials.length>1?"s":""} · range of arm-level estimates (populations differ – see contributing trials)</div>
   ${rb("2-yr OS",m.os2.r,TXC[tx])}${rb("3-yr OS",m.os3.r,TXC[tx])}${rb("5-yr OS",m.os5.r,TXC[tx])}${rb("Local control",m.lc.r,TXC[tx])}${rb("G≥3 pneumonitis",pr,"var(--ccrt)")}${rb("G≥3 oesophagitis",orr,"var(--scrt)")}
-  <div class="ovt">${line("Median OS",m.mos.r," mo")}${m.lc.r?line("LC timepoints",{txt:[...new Set(m.lc.rs.map(r=>r.y+"-yr"))].join(", ")},""):""}</div>
+  <div class="ovt">${line("Median OS",m.mos.r," mo")}${m.lc.r?line("LC timepoints",{txt:[...new Set(m.lc.rs.map(r=>r.y))].sort((a,b)=>a-b).map(y=>y+"-yr").join(", ")},""):""}</div>
   <details><summary>Contributing trials</summary><div class="sub">${trials.map(tl).join(" · ")}</div>
   ${m.pn.length?`<div class="sub" style="margin-top:6px"><b>Pneumonitis G≥3:</b> ${m.pn.map(x=>`${x.arm} ${fmt(x.v)}% (${TRIALS[x.t].name})`).join("; ")}</div>`:""}
   ${m.oe.length?`<div class="sub"><b>Oesophagitis G≥3:</b> ${m.oe.map(x=>`${x.arm} ${fmt(x.v)}% (${TRIALS[x.t].name})`).join("; ")}</div>`:""}</details></div>`}).join("");
