@@ -3,7 +3,7 @@
 <title>Lung Cancer · Radiotherapy Evidence</title>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1c2430;--mute:#5d6878;--line:#e3e7ec;--acc:#1f5f8b;
---rt:#9aa5b1;--hypo:#5b8def;--sabr:#1f5f8b;--sabrio:#b03a7a;--scrt:#d49a2a;--ccrt:#c0582f;--crtio:#8e6bbf;--port:#2a9d8f;--pci:#7a6a5a;--surg:#6c7682;--sys:#3c8d4f;--none:#c4cad2}
+--rt:#9aa5b1;--hypo:#5b8def;--sabr:#1f5f8b;--sabrio:#b03a7a;--scrt:#d49a2a;--ccrt:#c0582f;--crtio:#8e6bbf;--port:#2a9d8f;--pci:#7a6a5a;--surg:#6c7682;--sys:#3c8d4f;--none:#c4cad2;--pall:#7d9b76}
 @media (prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1a2029;--ink:#e6eaef;--mute:#9aa6b4;--line:#2b333f;--acc:#6fb3e0;--sabr:#4f95c8;--rt:#7c8794;--none:#4a525d}}
 *{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
 header{padding:20px 24px 8px;max-width:1150px;margin:auto}h1{font-size:22px;margin:0}header p{margin:4px 0 0;color:var(--mute);font-size:13px}
@@ -35,21 +35,22 @@ footer{color:var(--mute);font-size:12px;max-width:1150px;margin:auto;padding:0 2
 @media(max-width:600px){.row{grid-template-columns:100px 1fr 66px;font-size:12.5px}.val{font-size:12.5px}header,.ctrl,main{padding-left:14px;padding-right:14px}.seg button{padding:7px 9px;font-size:12.5px}}
 </style></head><body>
 <header><h1>Lung cancer · radiotherapy evidence</h1>
-<p>Survival, local control, toxicity and dose constraints from landmark trials – NSCLC and SCLC, RT alone, SABR, chemo-RT, RT + immunotherapy. Personal reference, not a clinical decision tool.</p></header>
+<p>Survival, local control, toxicity and dose constraints from landmark trials – NSCLC and SCLC, RT alone, SABR, chemo-RT, RT + immunotherapy, and RT in interstitial lung disease (ILD tab). Personal reference, not a clinical decision tool.</p></header>
 <div class="bar-top"><div class="ctrl">
 <div class="seg" id="grp"></div><div class="seg" id="tab"></div></div></div>
 <main id="m"></main>
 <footer>Figures are author-reported point estimates transcribed from the full text (or the published abstract where tagged “abstract” / “review-sourced”); populations, eras, staging editions, RT techniques and endpoint definitions differ, so cross-trial comparison is indicative only. “Typical range” = span of arm-level estimates across the listed trials for that treatment type – not a meta-analysis, not pooled. Toxicity: compare within a card only (grade threshold, acute/late and grading system are stated per card). Built from the user's full-text library; see README for conventions.</footer>
 <script src="data.js"></script>
 <script>
-const TXC={rt:"var(--rt)",hypo:"var(--hypo)",sabr:"var(--sabr)",sabrio:"var(--sabrio)",scrt:"var(--scrt)",ccrt:"var(--ccrt)",crtio:"var(--crtio)",port:"var(--port)",pci:"var(--pci)",surg:"var(--surg)",sys:"var(--sys)",none:"var(--none)"};
-const TXL={rt:"Conventional RT alone",hypo:"Hypofractionated / accelerated RT",sabr:"SABR / SBRT",sabrio:"SABR + immunotherapy",scrt:"Sequential chemo-RT",ccrt:"Concurrent chemo-RT",crtio:"Chemo-RT + immunotherapy",port:"Postoperative RT",pci:"Prophylactic cranial RT",surg:"Surgery (comparator)",sys:"Systemic therapy alone (comparator)",none:"No RT / observation"};
+const TXC={rt:"var(--rt)",hypo:"var(--hypo)",sabr:"var(--sabr)",sabrio:"var(--sabrio)",scrt:"var(--scrt)",ccrt:"var(--ccrt)",crtio:"var(--crtio)",port:"var(--port)",pci:"var(--pci)",surg:"var(--surg)",sys:"var(--sys)",none:"var(--none)",pall:"var(--pall)"};
+const TXL={rt:"Conventional RT alone (single modality)",hypo:"Hypofractionated / accelerated RT alone (single modality)",sabr:"SABR / SBRT (single modality)",sabrio:"SABR + immunotherapy",scrt:"Sequential chemo-RT (combined modality)",ccrt:"Concurrent chemo-RT (combined modality)",crtio:"Chemo-RT + immunotherapy",port:"Postoperative RT",pci:"Prophylactic cranial RT",surg:"Surgery (comparator)",sys:"Systemic therapy alone (comparator)",none:"No RT / observation",pall:"Palliative thoracic RT alone"};
 const EL={OS:"Overall survival",MOS:"Median overall survival",PFS:"Progression / event-free survival",MPFS:"Median PFS",LC:"Local / primary tumour control",LF:"Local or locoregional failure"};
 let G="es",T="ov";
 const link=t=>{const x=TRIALS[t];if(x.pmid)return `https://pubmed.ncbi.nlm.nih.gov/${x.pmid}/`;return x.doi?`https://doi.org/${x.doi}`:`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(x.pm)}`};
 const srcTag=t=>TRIALS[t].src==="abs"?'<span class="tag src">abstract</span>':TRIALS[t].src==="rev"?'<span class="tag src">review-sourced</span>':"";
 const tl=t=>`<a href="${link(t)}" target="_blank" rel="noopener">${TRIALS[t].name}</a>${srcTag(t)}`;
 const inG=r=>r.g===G;
+const MODNOTE={la:"Hypofractionated chemo-RT (e.g. SOCCAR 55 Gy/20 with cisplatin–vinorelbine) sits here under concurrent / sequential chemo-RT – it is not a single-modality result. Subgroup-only rows (e.g. PACIFIC EGFR-mutant) are excluded from these ranges.",ls:"All limited-stage SCLC thoracic RT trials here are combined with platinum–etoposide; there is no RT-alone arm."};
 const fmt=v=>Number.isInteger(v)?v:+v.toFixed(1);
 function bars(rows,max=100,unit="%"){return rows.map(r=>`<div class="row"><div>${r.arm}${r.note||r.ci?`<div class="sub">${[r.ci?"95% CI "+r.ci.replace(/^95% CI /,""):"",r.note||""].filter(Boolean).join(" · ")}</div>`:""}</div>
 <div class="track"><div class="fill" style="width:${Math.min(100,Math.max(r.v/max*100,1))}%;background:${TXC[r.tx]}"></div></div><div class="val">${fmt(r.v)}${unit}</div></div>`).join("")}
@@ -64,9 +65,9 @@ function toxComposite(tx,kind){const re=kind==="pneu"?/neumonitis/i:/esophagitis
  const out=[];TOX.filter(r=>inG(r)&&re.test(r.cat)&&/G3|≥G3/.test(r.gr)&&!/≥G2 \/|^≥G2$/.test(r.gr)).forEach(r=>{r.a.forEach(([arm,v,k])=>{if(k!==tx)return;if(/any grade|symptomatic|fatal|death|grade 4|G4|G5|≥G2|RPA|age >65|Any grade/i.test(arm))return;if(/ \/ /.test(r.cat)&&!re.test(arm))return;out.push({t:r.t,arm,v})})});return out}
 function overview(){
  const txs=usedTx().filter(k=>!["surg","sys","none"].includes(k));
- const metric=(tx,e,y)=>{const rs=OUT.filter(r=>inG(r)&&r.tx===tx&&r.e===e&&(y===undefined||r.y===y));return {r:rng(rs.map(r=>r.v)),rs}};
- const cards=txs.map(tx=>{
-  const m={mos:metric(tx,"MOS"),os2:metric(tx,"OS",2),os3:metric(tx,"OS",3),os5:metric(tx,"OS",5),lc:{rs:OUT.filter(r=>inG(r)&&r.tx===tx&&r.e==="LC")},pn:toxComposite(tx,"pneu"),oe:toxComposite(tx,"oes")};
+ const metric=(tx,e,y)=>{const rs=OUT.filter(r=>inG(r)&&!r.sub&&r.tx===tx&&r.e===e&&(y===undefined||r.y===y));return {r:rng(rs.map(r=>r.v)),rs}};
+ const card=tx=>{
+  const m={mos:metric(tx,"MOS"),os2:metric(tx,"OS",2),os3:metric(tx,"OS",3),os5:metric(tx,"OS",5),lc:{rs:OUT.filter(r=>inG(r)&&!r.sub&&r.tx===tx&&r.e==="LC")},pn:toxComposite(tx,"pneu"),oe:toxComposite(tx,"oes")};
   m.lc.r=rng(m.lc.rs.map(r=>r.v));const pr=rng(m.pn.map(x=>x.v)),orr=rng(m.oe.map(x=>x.v));
   const trials=[...new Set([...m.mos.rs,...m.os2.rs,...m.os3.rs,...m.os5.rs,...m.lc.rs].map(r=>r.t).concat(m.pn.map(x=>x.t),m.oe.map(x=>x.t)))];
   if(!trials.length)return "";
@@ -77,7 +78,9 @@ function overview(){
   <div class="ovt">${line("Median OS",m.mos.r," mo")}${m.lc.r?line("LC timepoints",{txt:[...new Set(m.lc.rs.map(r=>r.y))].sort((a,b)=>a-b).map(y=>y+"-yr").join(", ")},""):""}</div>
   <details><summary>Contributing trials</summary><div class="sub">${trials.map(tl).join(" · ")}</div>
   ${m.pn.length?`<div class="sub" style="margin-top:6px"><b>Pneumonitis G≥3:</b> ${m.pn.map(x=>`${x.arm} ${fmt(x.v)}% (${TRIALS[x.t].name})`).join("; ")}</div>`:""}
-  ${m.oe.length?`<div class="sub"><b>Oesophagitis G≥3:</b> ${m.oe.map(x=>`${x.arm} ${fmt(x.v)}% (${TRIALS[x.t].name})`).join("; ")}</div>`:""}</details></div>`}).join("");
+  ${m.oe.length?`<div class="sub"><b>Oesophagitis G≥3:</b> ${m.oe.map(x=>`${x.arm} ${fmt(x.v)}% (${TRIALS[x.t].name})`).join("; ")}</div>`:""}</details></div>`};
+ const SINGLE=["rt","hypo","sabr","pall"],sc=txs.filter(k=>SINGLE.includes(k)).map(card).join(""),cc=txs.filter(k=>!SINGLE.includes(k)).map(card).join("");
+ const cards=(sc?`<h2 style="grid-column:1/-1;margin:6px 0 0">Single-modality RT (radiotherapy alone, no concurrent or sequential chemo)</h2>${sc}`:"")+(cc?`<h2 style="grid-column:1/-1;margin:14px 0 0">Combined modality (RT with chemotherapy, immunotherapy or surgery)</h2>${MODNOTE[G]?`<div class="sub" style="grid-column:1/-1">${MODNOTE[G]}</div>`:""}${cc}`:"");
  return `<p class="sub">Composite view by treatment type. Bars show the <b>span</b> (min–max) of arm-level point estimates across trials in this group – not pooled, not weighted. Open “Contributing trials” to see which arms set the range; toxicity grade thresholds are G3 or higher as reported (CTCAE / RTOG).</p>
  <div class="grid">${cards}</div>
  <h2>Key messages</h2><div class="card"><ul class="k">${BOTTOM[G].map(x=>`<li>${x}</li>`).join("")}</ul></div>`}
@@ -96,14 +99,22 @@ function toxView(){const rs=TOX.filter(inG);
  return `<div class="card"><h3>${r.cat} <span class="tag">${r.gr}</span><span class="tag">${r.ph}</span></h3><div class="sub">${tl(r.t)}</div>
  ${r.a.map(([arm,v,k])=>`<div class="row"><div>${arm}</div><div class="track"><div class="fill" style="width:${Math.min(100,Math.max(v/mx*100,1))}%;background:${TXC[k]||"var(--ccrt)"}"></div></div><div class="val">${fmt(v)}%</div></div>`).join("")}${r.note?`<div class="note">${r.note}</div>`:""}</div>`}).join("")}</div>`}
 function consView(){return `<p class="sub">Dose–volume predictors and practical limits drawn from the trials and QUANTEC/guideline papers in the library. Not a protocol – check your institutional constraints. Applies across stage groups.</p><div class="grid">${CONSTRAINTS.map(c=>`<div class="card"><h3>${c.org} <span class="tag">${c.ctx}</span></h3><table>${c.items.map(([a,b,t])=>`<tr><td style="width:38%"><b>${a}</b></td><td>${b}${t&&TRIALS[t]?`<div class="sub">${tl(t)}</div>`:""}</td></tr>`).join("")}</table></div>`).join("")}</div>`}
-function trials(){const gs=Object.fromEntries(Object.keys(TRIALS).map(k=>[k,[...new Set(OUT.concat(TOX).concat(LC).filter(r=>r.t===k).map(r=>GROUPS[r.g].short))].join(", ")]));
+function ildView(){const L=ILD;
+ const risk=`<div class="card"><h3>How much does ILD raise the risk?</h3><table>${L.risk.map(([a,b,t])=>`<tr><td style="width:46%">${a}</td><td><b>${b}</b><div class="sub">${tl(t)}</div></td></tr>`).join("")}</table></div>`;
+ const mods=L.mod.map(m=>{const mx=Math.max(30,...m.rows.map(r=>r[1]));return `<div class="card" style="border-top:4px solid ${TXC[m.tx]}"><h3>${m.title}</h3>${m.rows.map(([a,v,t])=>`<div class="row"><div>${a}<div class="sub">${TRIALS[t].name}</div></div><div class="track"><div class="fill" style="width:${Math.min(100,Math.max(v/mx*100,1))}%;background:${TXC[m.tx]}"></div></div><div class="val">${fmt(v)}%</div></div>`).join("")}<div class="note">${m.eff}</div></div>`}).join("");
+ const pr=`<div class="card"><h3>Practical points</h3><table>${L.practice.map(([a,b,t])=>`<tr><td style="width:24%"><b>${a}</b></td><td>${b}<div class="sub">${tl(t)}</div></td></tr>`).join("")}</table></div>`;
+ const src=Object.keys(TRIALS).filter(k=>ILDKEYS.includes(k)).map(k=>`<tr><td><b>${tl(k)}</b><div class="sub">${TRIALS[k].ref}</div></td><td>${TRIALS[k].pop}<div class="sub">${TRIALS[k].n}</div></td><td>${TRIALS[k].key}</td></tr>`).join("");
+ return `<p class="sub"><b>Lung cancer with interstitial lung disease (ILD) or interstitial lung abnormalities (ILA)</b> – applies across stage groups. ${L.intro} Rates come from different designs (one phase II trial, systematic reviews, retrospective series) and are not directly comparable.</p>
+ <div class="grid">${risk}${mods}</div><h2>Practical points</h2>${pr}<h2>Sources</h2><div class="card" style="overflow-x:auto"><table><tr><th>Source</th><th>Population</th><th>Key numbers</th></tr>${src}</table></div>`}
+const ILDKEYS=["ASPIREILD","CHEN17","SAHA22","KOBA18","JIANG25","SEOK24","DAIDO22","TOMASSEN26","GOODMAN20"];
+function trials(){const gs=Object.fromEntries(Object.keys(TRIALS).map(k=>[k,[...new Set(OUT.concat(TOX).concat(LC).filter(r=>r.t===k).map(r=>GROUPS[r.g].short))].join(", ")||(ILDKEYS.includes(k)?"ILD tab":CONSTRAINTS.some(c=>c.items.some(i=>i[2]===k))?"Constraints tab":"")]));
  return `<p class="sub">All sources. “abstract” = numbers taken from the published abstract (full text not in library); “review-sourced” = taken from a secondary review. Links go to the DOI or a PubMed search.</p><div class="card" style="overflow-x:auto"><table><tr><th>Trial</th><th>Population</th><th>Arms</th><th>N / FU</th><th>Take-home</th></tr>${Object.keys(TRIALS).map(k=>{const x=TRIALS[k];return `<tr><td><b>${tl(k)}</b><div class="sub">${x.ref}</div><div class="sub">${gs[k]}</div></td><td>${x.pop}</td><td>${x.arms}</td><td>${x.n}<div class="sub">${x.fu}</div></td><td>${x.key}</td></tr>`}).join("")}</table></div>`}
-const TABS={ov:["Overview",overview],sv:["Survival",survView],lc:["Local control",lcView],tx:["Toxicity",toxView],dc:["Constraints",consView],tr:["Trials",trials]};
+const TABS={ov:["Overview",overview],sv:["Survival",survView],lc:["Local control",lcView],tx:["Toxicity",toxView],dc:["Constraints",consView],il:["ILD",ildView],tr:["Trials",trials]};
 function seg(id,items,cur,fn){document.getElementById(id).innerHTML=items.map(([k,l])=>`<button class="${k===cur?"on":""}" data-k="${k}">${l}</button>`).join("");
  document.querySelectorAll(`#${id} button`).forEach(b=>b.onclick=()=>fn(b.dataset.k))}
 function render(){seg("grp",Object.entries(GROUPS).map(([k,v])=>[k,v.short]),G,k=>{G=k;render()});
  seg("tab",Object.entries(TABS).map(([k,v])=>[k,v[0]]),T,k=>{T=k;render()});
  document.getElementById("grp").style.display=["dc","tr"].includes(T)?"none":"";
- document.getElementById("m").innerHTML=(!["tr","dc"].includes(T)?`<div class="sub" style="margin-bottom:12px"><b>${GROUPS[G].label}</b></div>`:"")+TABS[T][1]();window.scrollTo({top:0});}
+ document.getElementById("m").innerHTML=(!["tr","dc","il"].includes(T)?`<div class="sub" style="margin-bottom:12px"><b>${GROUPS[G].label}</b></div>`:"")+TABS[T][1]();window.scrollTo({top:0});}
 render();
 </script></body></html>
